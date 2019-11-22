@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class QuizDbHelper extends SQLiteOpenHelper {
-
     private static final String DATABASE_NAME = "MyAwesomeQuiz.db";
     private static final int DATABASE_VERSION = 1;
 
@@ -37,7 +36,7 @@ public class QuizDbHelper extends SQLiteOpenHelper {
                 ")";
 
         db.execSQL(SQL_CREATE_QUESTIONS_TABLE);
-        fillQuestionTable();
+        fillQuestionsTable();
     }
 
     @Override
@@ -46,7 +45,7 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    private void fillQuestionTable() {
+    private void fillQuestionsTable() {
         Question q1 = new Question("A is correct", "A", "B", "C", 1);
         addQuestion(q1);
         Question q2 = new Question("B is correct", "A", "B", "C", 2);
@@ -85,6 +84,7 @@ public class QuizDbHelper extends SQLiteOpenHelper {
                 questionList.add(question);
             } while (c.moveToNext());
         }
+
         c.close();
         return questionList;
     }
