@@ -31,6 +31,7 @@ public class QuizActivity extends AppCompatActivity {
     private TextView textViewQuestion;
     private TextView textViewScore;
     private TextView textViewQuestionCount;
+    private TextView textViewCategory;
     private TextView textViewDifficulty;
     private TextView textViewCountDown;
     private RadioGroup rbGroup;
@@ -63,6 +64,7 @@ public class QuizActivity extends AppCompatActivity {
         textViewQuestion = findViewById(R.id.text_view_question);
         textViewScore = findViewById(R.id.text_view_score);
         textViewQuestionCount = findViewById(R.id.text_view_question_count);
+        textViewCategory = findViewById(R.id.text_view_category);
         textViewDifficulty = findViewById(R.id.text_view_difficulty);
         textViewCountDown = findViewById(R.id.text_view_countdown);
         rbGroup = findViewById(R.id.radio_group);
@@ -72,16 +74,19 @@ public class QuizActivity extends AppCompatActivity {
         buttonConfirmNext = findViewById(R.id.button_confirm_next);
 
         textColorDefaultRb = rb1.getTextColors();
-        textColorDefaultCd = textViewCountDown.getHintTextColors();
+        textColorDefaultCd = textViewCountDown.getTextColors();
 
         Intent intent = getIntent();
+        int categoryID = intent.getIntExtra(StartingScreenActivity.EXTRA_CATEGORY_ID, 0);
+        String categoryName = intent.getStringExtra(StartingScreenActivity.EXTRA_CATEGORY_NAME);
         String difficulty = intent.getStringExtra(StartingScreenActivity.EXTRA_DIFFICULTY);
 
+        textViewCategory.setText("Category: " + categoryName);
         textViewDifficulty.setText("Difficulty: " + difficulty);
 
         if (savedInstanceState == null) {
-            QuizDbHelper dbHelper = new QuizDbHelper(this);
-            questionList = dbHelper.getQuestions(difficulty);
+            QuizDbHelper dbHelper = QuizDbHelper.getInstance(this);
+            questionList = dbHelper.getQuestions(categoryID, difficulty);
             questionCountTotal = questionList.size();
             Collections.shuffle(questionList);
 
@@ -185,7 +190,7 @@ public class QuizActivity extends AppCompatActivity {
         RadioButton rbSelected = findViewById(rbGroup.getCheckedRadioButtonId());
         int answerNr = rbGroup.indexOfChild(rbSelected) + 1;
 
-        if (answerNr ==currentQuestion.getAnswerNr()) {
+        if (answerNr == currentQuestion.getAnswerNr()) {
             score++;
             textViewScore.setText("Score: " + score);
         }
@@ -198,7 +203,7 @@ public class QuizActivity extends AppCompatActivity {
         rb2.setTextColor(Color.RED);
         rb3.setTextColor(Color.RED);
 
-        switch(currentQuestion.getAnswerNr()) {
+        switch (currentQuestion.getAnswerNr()) {
             case 1:
                 rb1.setTextColor(Color.GREEN);
                 textViewQuestion.setText("Answer 1 is correct");
@@ -214,7 +219,7 @@ public class QuizActivity extends AppCompatActivity {
         }
 
         if (questionCounter < questionCountTotal) {
-            buttonConfirmNext .setText("Next");
+            buttonConfirmNext.setText("Next");
         } else {
             buttonConfirmNext.setText("Finish");
         }
