@@ -75,14 +75,39 @@ public class QuizDbHelper extends SQLiteOpenHelper {
 
     private void fillCategoriesTable() {
         Category c1 = new Category("Programming");
-        addCategory(c1);
+        insertCategory(c1);
         Category c2 = new Category("Geography");
-        addCategory(c2);
+        insertCategory(c2);
         Category c3 = new Category("Math");
-        addCategory(c3);
+        insertCategory(c3);
     }
 
-    private void addCategory(Category category) {
+    public void addCategory(Category category) {
+        List<Category> categories = getAllCategories();
+
+        boolean exists = false;
+
+        for (Category existingCategory : categories) {
+            if (category == existingCategory) {
+                exists = true;
+            }
+        }
+
+        if (!exists) {
+            db = getWritableDatabase();
+            insertCategory(category);
+        }
+    }
+
+    public void addCategories(List<Category> categories) {
+        db = getWritableDatabase();
+
+        for (Category category : categories) {
+            insertCategory(category);
+        }
+    }
+
+    private void insertCategory(Category category) {
         ContentValues cv = new ContentValues();
         cv.put(CategoriesTable.COLUMN_NAME, category.getName());
         db.insert(CategoriesTable.TABLE_NAME, null, cv);
@@ -92,30 +117,56 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         Question q1 = new Question("Programming, Easy: A is correct",
                 "A", "B", "C", 1,
                 Question.DIFFICULTY_EASY, Category.PROGRAMMING);
-        addQuestion(q1);
+        insertQuestion(q1);
         Question q2 = new Question("Geography, Medium: B is correct",
                 "A", "B", "C", 2,
                 Question.DIFFICULTY_MEDIUM, Category.GEOGRAPHY);
-        addQuestion(q2);
+        insertQuestion(q2);
         Question q3 = new Question("Math, Hard: C is correct",
                 "A", "B", "C", 3,
                 Question.DIFFICULTY_HARD, Category.MATH);
-        addQuestion(q3);
+        insertQuestion(q3);
         Question q4 = new Question("Math, Easy: A is correct",
                 "A", "B", "C", 1,
                 Question.DIFFICULTY_EASY, Category.MATH);
-        addQuestion(q4);
+        insertQuestion(q4);
         Question q5 = new Question("Non existing, Easy: A is correct",
                 "A", "B", "C", 1,
                 Question.DIFFICULTY_EASY, 4);
-        addQuestion(q5);
+        insertQuestion(q5);
         Question q6 = new Question("Non existing, Medium: B is correct",
                 "A", "B", "C", 2,
                 Question.DIFFICULTY_MEDIUM, 5);
-        addQuestion(q6);
+        insertQuestion(q6);
     }
 
-    private void addQuestion(Question question) {
+    public void addQuestion(Question question) {
+
+        List<Question> questions = getAllQuestions();
+
+        boolean exists = false;
+
+        for (Question existingQuestion : questions) {
+            if (existingQuestion.getQuestion() == question.getQuestion()) {
+                exists = true;
+            }
+        }
+
+        if (!exists) {
+            db = getWritableDatabase();
+            insertQuestion(question);
+        }
+    }
+
+    public void addQuestions(List<Question> questions) {
+        db = getWritableDatabase();
+
+        for (Question question : questions) {
+            insertQuestion(question);
+        }
+    }
+
+    private void insertQuestion(Question question) {
         ContentValues cv = new ContentValues();
         cv.put(QuestionTable.COLUMN_QUESTION, question.getQuestion());
         cv.put(QuestionTable.COLUMN_OPTION1, question.getOption1());
