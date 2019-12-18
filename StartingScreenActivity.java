@@ -15,6 +15,7 @@ import java.util.List;
 
 public class StartingScreenActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_QUIZ = 1;
+    private static final int REQUEST_CODE_QUESTION = 2;
     public static final String EXTRA_CATEGORY_ID = "extraCategoryID";
     public static final String EXTRA_CATEGORY_NAME = "extraCategoryName";
     public static final String EXTRA_DIFFICULTY = "extraDifficulty";
@@ -48,6 +49,14 @@ public class StartingScreenActivity extends AppCompatActivity {
                 startQuiz();
             }
         });
+
+        Button buttonAddQuestion = findViewById(R.id.button_add_question);
+        buttonAddQuestion.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addQuestion();
+            }
+        });
     }
 
     private void startQuiz() {
@@ -61,6 +70,11 @@ public class StartingScreenActivity extends AppCompatActivity {
         intent.putExtra(EXTRA_CATEGORY_NAME, categoryName);
         intent.putExtra(EXTRA_DIFFICULTY, difficulty);
         startActivityForResult(intent, REQUEST_CODE_QUIZ);
+    }
+
+    private void addQuestion() {
+        Intent intent = new Intent(StartingScreenActivity.this, InsertQuestionActivity.class);
+        startActivity(intent);
     }
 
     @Override
@@ -94,7 +108,6 @@ public class StartingScreenActivity extends AppCompatActivity {
                 android.R.layout.simple_spinner_item, difficultyLevels);
         adapterDifficulty.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerDifficulty.setAdapter(adapterDifficulty);
-
     }
 
     private void loadHighscore() {
