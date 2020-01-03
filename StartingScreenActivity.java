@@ -57,6 +57,14 @@ public class StartingScreenActivity extends AppCompatActivity {
                 addQuestion();
             }
         });
+
+        Button buttonAddCategory = findViewById(R.id.button_add_category);
+        buttonAddCategory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addCategory();
+            }
+        });
     }
 
     private void startQuiz() {
@@ -74,6 +82,11 @@ public class StartingScreenActivity extends AppCompatActivity {
 
     private void addQuestion() {
         Intent intent = new Intent(StartingScreenActivity.this, InsertQuestionActivity.class);
+        startActivity(intent);
+    }
+
+    private void addCategory() {
+        Intent intent = new Intent(StartingScreenActivity.this, AddCategoryActivity.class);
         startActivity(intent);
     }
 
