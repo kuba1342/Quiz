@@ -5,11 +5,13 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.example.kuba.quiz.QuizContract.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class QuizDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "MyAwesomeQuiz.db";
@@ -18,6 +20,8 @@ public class QuizDbHelper extends SQLiteOpenHelper {
     private static QuizDbHelper instance;
 
     private SQLiteDatabase db;
+
+    private ArrayList<Integer> preparedQuestionList;
 
     private QuizDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -58,6 +62,8 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_QUESTIONS_TABLE);
         fillCategoriesTable();
         fillQuestionsTable();
+
+        preparedQuestionList = new ArrayList<>();
     }
 
     @Override
@@ -114,29 +120,49 @@ public class QuizDbHelper extends SQLiteOpenHelper {
     }
 
     private void fillQuestionsTable() {
-        Question q1 = new Question("Programming, Easy: A is correct",
-                "A", "B", "C", 1,
-                Question.DIFFICULTY_EASY, Category.PROGRAMMING);
+        Question q1 = new Question("Which of the following is not a stable sorting algorithm in its typical implementation?",
+                "Quick Sort", "Merge Sort", "Insertion Sort", 1,
+                Question.DIFFICULTY_MEDIUM, Category.PROGRAMMING);
         insertQuestion(q1);
-        Question q2 = new Question("Geography, Medium: B is correct",
-                "A", "B", "C", 2,
+        Question test1 = new Question("The time complexity of computing the transitive closure of a binary relation on a set of n elements is known to be:",
+                "O(n)", "O(n ^ (3/2))", "O(n^3)", 3,
+                Question.DIFFICULTY_HARD, Category.PROGRAMMING);
+        insertQuestion(test1);
+        Question test2 = new Question("Which of the following statements is/are TRUE for an undirected graph? P: Number of odd degree vertices is even Q: Sum of degrees of all vertices is even?",
+                "Neither P nor Q", "Both P and Q", "Q Only", 2,
+                Question.DIFFICULTY_EASY, Category.PROGRAMMING);
+        insertQuestion(test2);
+        Question test3 = new Question("Given an undirected graph G with V vertices and E edges, the sum of the degrees of all vertices is:",
+                "2V", "V", "2E", 3,
+                Question.DIFFICULTY_EASY, Category.PROGRAMMING);
+        insertQuestion(test3);
+        Question qP3 = new Question("Which of these is not a Python core data type?",
+                "Class", "Dictionary", "Tuples", 1,
+                Question.DIFFICULTY_EASY, Category.PROGRAMMING);
+        insertQuestion(qP3);
+        Question q2 = new Question("What is Earth's largest continent?",
+                "Africa", "Europe", "Asia", 3,
                 Question.DIFFICULTY_MEDIUM, Category.GEOGRAPHY);
         insertQuestion(q2);
-        Question q3 = new Question("Math, Hard: C is correct",
-                "A", "B", "C", 3,
+        Question qG2 = new Question("What river runs through Baghdad?",
+                "Karun", "Jordan", "Tigris", 3,
+                Question.DIFFICULTY_MEDIUM, Category.GEOGRAPHY);
+        insertQuestion(qG2);
+        Question qG3 = new Question("What percentage of the River Nile is located in Egypt?",
+                "22%", "83%", "9%", 1,
+                Question.DIFFICULTY_MEDIUM, Category.GEOGRAPHY);
+        insertQuestion(qG3);
+        Question q4 = new Question("What is the square root of 49?",
+                "7", "16", "24,5", 1,
                 Question.DIFFICULTY_HARD, Category.MATH);
-        insertQuestion(q3);
-        Question q4 = new Question("Math, Easy: A is correct",
-                "A", "B", "C", 1,
-                Question.DIFFICULTY_EASY, Category.MATH);
         insertQuestion(q4);
-        Question q5 = new Question("Non existing, Easy: A is correct",
-                "A", "B", "C", 1,
-                Question.DIFFICULTY_EASY, 4);
+        Question q5 = new Question("If I have a circle with a radius of 50yds, what is the diameter?",
+                "25yds", "314yds", "100yds", 3,
+                Question.DIFFICULTY_HARD, Category.MATH);
         insertQuestion(q5);
-        Question q6 = new Question("Non existing, Medium: B is correct",
-                "A", "B", "C", 2,
-                Question.DIFFICULTY_MEDIUM, 5);
+        Question q6 = new Question("Sinθ / cosθ = ?",
+                "1", "Tanθ", "Secθ", 2,
+                Question.DIFFICULTY_HARD, Category.MATH);
         insertQuestion(q6);
     }
 
@@ -221,6 +247,29 @@ public class QuizDbHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Question> getQuestions(int categoryID, String difficulty) {
+        db = getReadableDatabase();
+
+        String selection = QuestionTable.COLUMN_CATEGORY_ID + " = ? " +
+                " AND " + QuestionTable.COLUMN_DIFFICULTY + " = ? ";
+        String[] selectionArgs = new String[]{String.valueOf(categoryID), difficulty};
+
+        Cursor c = db.query(
+                QuestionTable.TABLE_NAME,
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        if (c.getCount() < 5)
+            return getLeftQuestions(categoryID, difficulty);
+        else
+            return getRandomQuestions(categoryID, difficulty);
+    }
+
+    private ArrayList<Question> getLeftQuestions(int categoryID, String difficulty) {
         ArrayList<Question> questionList = new ArrayList<>();
         db = getReadableDatabase();
 
@@ -255,5 +304,91 @@ public class QuizDbHelper extends SQLiteOpenHelper {
 
         c.close();
         return questionList;
+    }
+
+    private ArrayList<Question> getRandomQuestions(int categoryID, String difficulty) {
+        ArrayList<Question> questionList = new ArrayList<>();
+        db = getReadableDatabase();
+
+        String selection = QuestionTable.COLUMN_CATEGORY_ID + " = ? " +
+                " AND " + QuestionTable.COLUMN_DIFFICULTY + " = ? ";
+        String[] selectionArgs = new String[]{String.valueOf(categoryID), difficulty};
+
+        Cursor c = db.query(
+                QuestionTable.TABLE_NAME,
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        prepareQuestionList(categoryID, difficulty);
+
+        ArrayList<Integer> questionIDs = new ArrayList<>();
+        boolean notUsed;
+        while (questionIDs.size() < 5) {
+            notUsed = true;
+            Random rand = new Random();
+            int randID = preparedQuestionList.get(rand.nextInt(preparedQuestionList.size()));
+            for (int ID : questionIDs) {
+                if (randID == ID)
+                    notUsed = false;
+            }
+            if (notUsed)
+                questionIDs.add(randID);
+        }
+
+        if (c.moveToFirst()) {
+            do {
+                for (int questionID : questionIDs) {
+                    int cursorID = c.getInt(c.getColumnIndex(QuestionTable._ID));
+                    if (cursorID == questionID) {
+                        Question question = new Question();
+                        question.setId(c.getInt(c.getColumnIndex(QuestionTable._ID)));
+                        question.setQuestion(c.getString(c.getColumnIndex(QuestionTable.COLUMN_QUESTION)));
+                        question.setOption1(c.getString(c.getColumnIndex(QuestionTable.COLUMN_OPTION1)));
+                        question.setOption2(c.getString(c.getColumnIndex(QuestionTable.COLUMN_OPTION2)));
+                        question.setOption3(c.getString(c.getColumnIndex(QuestionTable.COLUMN_OPTION3)));
+                        question.setAnswerNr(c.getInt(c.getColumnIndex(QuestionTable.COLUMN_ANSWER_NR)));
+                        question.setDifficulty(c.getString(c.getColumnIndex(QuestionTable.COLUMN_DIFFICULTY)));
+                        question.setCategoryID(c.getInt(c.getColumnIndex(QuestionTable.COLUMN_CATEGORY_ID)));
+                        questionList.add(question);
+                    }
+                }
+            } while (c.moveToNext());
+        }
+
+        c.close();
+        return questionList;
+    }
+
+    private void prepareQuestionList(int categoryID, String difficulty) {
+        db = getReadableDatabase();
+
+        String selection = QuestionTable.COLUMN_CATEGORY_ID + " = ? " +
+                " AND " + QuestionTable.COLUMN_DIFFICULTY + " = ? ";
+        String[] selectionArgs = new String[]{String.valueOf(categoryID), difficulty};
+
+        Cursor c = db.query(
+                QuestionTable.TABLE_NAME,
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        if (preparedQuestionList.size() != 0)
+            preparedQuestionList.clear();
+
+        if (c.moveToFirst()) {
+            do {
+                int questionID = c.getInt(c.getColumnIndex(QuestionTable._ID));
+                preparedQuestionList.add(questionID);
+            } while (c.moveToNext());
+        }
     }
 }

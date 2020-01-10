@@ -1,5 +1,6 @@
 package com.example.kuba.quiz;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -38,6 +39,9 @@ public class AddCategoryActivity extends AppCompatActivity {
             clearField();
 
             Toast.makeText(this, "Category added!", Toast.LENGTH_SHORT).show();
+
+            Intent intent = new Intent(AddCategoryActivity.this, StartingScreenActivity.class);
+            startActivity(intent);
         } else
             Toast.makeText(this, "Category name is too short.", Toast.LENGTH_SHORT).show();
     }
